@@ -1,9 +1,53 @@
 .App {
   text-align: center;
-  padding: 30px 0px;
+  padding: 25px 0px;
 }
 
 .input_search {
   padding: 10px;
   width: 250px;
+}
+
+.components-row {
+  width: 50%;
+  margin: 20px auto;
+}
+
+.result_container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.successful-result-details{
+  width: 50%;
+}
+
+.search_result_poster{
+  width: 300px;
+  height: 450px;
+  padding: 0px 10px;
+}
+
+.genre-button{
+  padding: 8px;
+  margin: 0px 5px;
+}
+
+.genre-buttons-container {
+  margin: 10px 0px;
+  height: 40px;
+}
+
+.description-container {
+  height: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.multiple-results-container{
+  width: 80%;
+  border: 1px solid black;
+  margin: auto;
+  text-align: left;
+  padding: 0px 20px;
 }
