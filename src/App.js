@@ -2,7 +2,7 @@ import React from 'react'
 // CSS
 import './App.css';
 // Components
-// import SearchComponent from 'Components/SearchComponent';
+// import SearchComponent from 'Components/SearchComponent'
 import OfflineTest from 'Components/OfflineTest'
 
 

@@ -4,8 +4,8 @@ const SuccessfulResult = (props) => {
 
     const genres = props.genres
 
-    const displayGenres = genres.slice(0,3).map((genre, index) => (
-        <button className="genre-button" key={index}>{genre}</button>
+    const displayGenres = genres.slice(0,3).map((genre) => (
+        <button className="genre-button">{genre}</button>
     ))
 
     return (

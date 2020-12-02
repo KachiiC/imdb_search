@@ -1,68 +1,125 @@
-import React,{useState, useEffect} from 'react'
-
+import React,{ useState, useEffect } from 'react'
+// Components
+import SuccessfulResult from './SuccessfulResult'
+import MultipleResults from './MultipleResults'
+import NoResults from './NoResults'
+import RapidApi_key from '../../Api_key/RapidApi_key'
 
 const SearchComponent = () => {
+
+    const RapidURL = "https://movies-tvshows-data-imdb.p.rapidapi.com/"
     
     const [inputName, setInputName] = useState("")
-    const [showData, setShowData] = useState({"tv_results": [{ "title": "", "imdb_id": ""}]})
-    const [showPoster, setShowPoster] = useState("")
+    const [showData, setShowData] = useState({
+        "tv_results": [{
+                "title": "",
+                "imdb_id": "",
+            }
+        ]
+    })
+    const [showId, setShowId] = useState("")
     const [showResults, setShowResults] = useState(false)
+    const [showPoster, setShowPoster] = useState("")
+    const [showDescription, setShowDescription] = useState("")
+    const [showGenres, setShowGenres] = useState([])
+    
     
     const handleSubmit = data => {
         data.preventDefault()
         const inputData = document.getElementById("input_name").value
-        setInputName(inputData.split(" ").join("%20"))
+        setInputName(inputData)
     }
+
+    const inputUrl = inputName.split(" ").join("%20")
 
     useEffect(()=> {
         if (inputName !== "") {
-        fetch(`https://movies-tvshows-data-imdb.p.rapidapi.com/?type=get-shows-by-title&title=${inputName}`, {
-            "method": "GET",
-            "headers": {
-            "x-rapidapi-key": "985371e109mshb5666c0424d5dcfp1b7485jsndf2afe5a3591",
-            "x-rapidapi-host": "movies-tvshows-data-imdb.p.rapidapi.com"
-            }
-        })
-        .then(response => response.json())
-        .then((responseData) => {
-            setShowData(responseData)
-            setShowResults(true)
-        })
-        .catch(err => {
-            console.error(err);
-        });
+            fetch(`${RapidURL}?type=get-shows-by-title&title=${inputUrl}`, {
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-key": RapidApi_key,
+                    "x-rapidapi-host": "movies-tvshows-data-imdb.p.rapidapi.com"
+                }
+            })
+            .then(response => response.json())
+            .then((responseData) => {
+                responseData.search_results === 1 ? setShowId(responseData[0].imdb_id) :
+                responseData.tv_results.map((result) => {
+                    if (result.title === inputName) {
+                        return setShowId(result.imdb_id)
+                    }
+                })
+                setShowData(responseData)
+                setShowResults(true)
+            })
+            .catch(err => {
+                console.error(err);
+            });
         }
-    },[inputName])
+    },[inputName, inputUrl])
 
     useEffect(() => {
-        fetch(`https://movies-tvshows-data-imdb.p.rapidapi.com/?imdb=${showData.tv_results[0].imdb_id}&type=get-show-images-by-imdb`, {
-        "method": "GET",
-        "headers": {
-            "x-rapidapi-key": "985371e109mshb5666c0424d5dcfp1b7485jsndf2afe5a3591",
-            "x-rapidapi-host": "movies-tvshows-data-imdb.p.rapidapi.com"
-        }
+        Promise.all([
+            fetch(`${RapidURL}?imdb=${showId}&type=get-show-images-by-imdb`, {
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-key": RapidApi_key,
+                    "x-rapidapi-host": "movies-tvshows-data-imdb.p.rapidapi.com"
+                }
+            }).then(response => response.json()),
+            fetch(`${RapidURL}?imdb=${showId}&type=get-show-details`, {
+                "method": "GET",
+                "headers": {
+                    "x-rapidapi-key": RapidApi_key,
+                    "x-rapidapi-host": "movies-tvshows-data-imdb.p.rapidapi.com"
+                }
+            }).then(response => response.json())
+        ])
+        .then(responseData => {
+            setShowPoster(responseData[0].poster)
+            setShowDescription(responseData[1].description.split("").slice(0,330).join(""))
+            setShowGenres(responseData[1].genres)
         })
-        .then(response => response.json())
-        .then(responseImageData => setShowPoster(responseImageData.poster))
         .catch(err => console.error(err))
-    },[showData])
-
+    },[showId])
 
     const showName = showData.tv_results[0].title
+    const resultsList = showData.tv_results.map(result => result.title)
+
+    console.log(inputName)
+    console.log(showId)
+
+    const renderLogic = showData.search_results !== 1 ? (
+        showData.search_results !== 0 ? ( 
+            <MultipleResults
+                results={resultsList} 
+            />
+        ) : (
+            <NoResults
+                searched={inputName}
+            />
+        )
+    ): (
+        <SuccessfulResult 
+            title={showName}
+            image={showPoster}
+            description={showDescription}
+            genres={showGenres}
+        />
+    )
 
     return (
         <div>
             <h1>Imdb search</h1>
             <form onSubmit={handleSubmit}>
                 <input 
-                id="input_name"
-                className="input_search" 
+                    id="input_name"
+                    className="input_search" 
                 />
             </form>
             { showResults && (
-                <div>
-                    <h1>{showName}</h1>
-                    <img src={showPoster} alt="show_image"/>
+                <div className="components-row">
+                    {renderLogic}
                 </div>
             )}
         </div>
