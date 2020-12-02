@@ -2,14 +2,14 @@ import React from 'react'
 // CSS
 import './App.css';
 // Components
-// import SearchComponent from 'Components/SearchComponent'
-import OfflineTest from 'Components/OfflineTest'
+import SearchComponent from 'Components/SearchComponent'
+// import OfflineTest from 'Components/OfflineTest'
 
 
 const App = () => (
     <div className="App">
-      {/* <SearchComponent /> */}
-      <OfflineTest />
+      <SearchComponent />
+      {/* <OfflineTest /> */}
     </div>
 )
 

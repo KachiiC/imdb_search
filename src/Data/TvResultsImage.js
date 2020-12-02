@@ -1,5 +1,4 @@
 const TvResultsImage = {
-
     "title": "Game of Thrones",
     "IMDB": "tt0944947",
     "poster": "http://image.tmdb.org/t/p/original/u3bZgnGQ9T01sWNhyveQz0wH0Hl.jpg",
