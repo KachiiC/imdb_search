@@ -3,6 +3,7 @@ import React from 'react'
 const SuccessfulResult = (props) => {
 
     const genres = props.genres
+    console.log(genres)
 
     const displayGenres = genres.slice(0,3).map((genre, index) => (
         <button className="genre-button" key={index}>

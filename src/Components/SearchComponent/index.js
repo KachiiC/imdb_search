@@ -13,10 +13,12 @@ const SearchComponent = () => {
     const [showId, setShowId] = useState("")
     const [showSearchResults, setShowSearchResults] = useState([])
     const [displayResults, setDisplayResults] = useState(false)
-    const [showTitle, setShowTitle] = useState("")
-    const [showPoster, setShowPoster] = useState("")
-    const [showDescription, setShowDescription] = useState("")
-    const [showGenres, setShowGenres] = useState([])
+    const [showMetdata, setShowMetadata] = useState({
+        "title": "",
+        "poster": "",
+        "description": "",
+        "genres": [] 
+    })
     
     const handleSubmit = data => {
         data.preventDefault()
@@ -24,10 +26,9 @@ const SearchComponent = () => {
         setInputName(inputData)
     }
 
-    const inputUrl = inputName.split(" ").join("%20")
-
     useEffect(()=> {
         if (inputName !== "") {
+            const inputUrl = inputName.split(" ").join("%20")
             fetch(`${RapidURL}?type=get-shows-by-title&title=${inputUrl}`, {
                 "method": "GET",
                 "headers": {
@@ -36,26 +37,37 @@ const SearchComponent = () => {
                 }
             })
             .then(response => response.json())
-            .then((responseData) => {
-                responseData.search_results === 1 ? setShowId(responseData.tv_results[0].imdb_id):
-                (responseData.search_results !== 0 ?  
-                    responseData.tv_results.filter((show) => {
-                        show.title.toUpperCase() === inputName.toUpperCase() ? 
-                        setShowId(show.imdb_id) : setShowId("")
-                    }): setShowId("")
-                )
-                responseData.search_results !== 0 ? 
-                setShowSearchResults(responseData.tv_results.map(result => result.title)):
-                setShowSearchResults([])
-                setDisplayResults(true)
+            .then((response) => {
+                setDisplayResults(false)
+                if (response.search_results === 0) {
+                    setShowId("")
+                    setShowSearchResults([])
+                    setDisplayResults(true)
+                } else {
+                    if (response.search_results > 1) {
+                        const exactMatch = response.tv_results.find((show) => { 
+                            return show.title.toUpperCase() === inputName.toUpperCase()
+                        })
+        
+                        if (exactMatch === undefined) {
+                            setShowId("")
+                            setShowSearchResults(response.tv_results.map(result => result.title))
+                            setDisplayResults(true) 
+                        } else {
+                            setShowId(exactMatch.imdb_id)
+                        }
+                    } else {
+                        setShowId(response.tv_results[0].imdb_id)
+                    }
+                }
             })
             .catch(err => {
                 console.error(err);
             });
         }
-    },[inputName,inputUrl])
+    },[inputName])
 
-    console.log(showId)
+    console.log(showId) //TODO: please remove
 
     useEffect(() => {
         if (showId !== "") {
@@ -76,10 +88,13 @@ const SearchComponent = () => {
                 }).then(response => response.json())
             ])
             .then(responseData => {
-                setShowTitle(responseData[0].title)
-                setShowPoster(responseData[0].poster)
-                setShowDescription(responseData[1].description.split("").slice(0,330).join(""))
-                setShowGenres(responseData[1].genres)
+                setShowMetadata({
+                    "title": responseData[0].title,
+                    "poster": responseData[0].poster,
+                    "description": responseData[1].description.split("").slice(0,330).join(""),
+                    "genres": responseData[1].genres
+                })
+                setDisplayResults(true)
             })
             .catch(err => console.error(err))
         }
@@ -87,17 +102,16 @@ const SearchComponent = () => {
 
     const renderLogic = showId !== "" ? (
         <SuccessfulResult 
-            title={showTitle}
-            image={showPoster}
-            description={showDescription}
-            genres={showGenres}
+            title={showMetdata.title}
+            image={showMetdata.poster}
+            description={showMetdata.description}
+            genres={showMetdata.genres}
         />
     ):(
         showSearchResults.length === 0 ? (
             <NoResults searched={inputName} />
-        ): 
-            <MultipleResults results={showSearchResults} />
-        )
+        ):<MultipleResults results={showSearchResults} />
+    )
 
     return (
         <div>
